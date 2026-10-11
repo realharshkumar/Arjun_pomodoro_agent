@@ -402,12 +402,16 @@
           body: formData
         });
         const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || `Server error ${res.status}`);
+        }
         if (data.user_text) {
           appendMessage("user", data.user_text);
         }
         handleCoachResponse(data);
       } catch (err) {
-        appendMessage("assistant", "Could not process speech. Please verify your Sarvam API key.");
+        console.error("Voice chat error:", err);
+        appendMessage("assistant", "Voice error: " + err.message);
       } finally {
         setStatus(false);
       }

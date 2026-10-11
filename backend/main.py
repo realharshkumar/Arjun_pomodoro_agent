@@ -68,15 +68,22 @@ async def chat_voice(
 
     try:
         audio_bytes = await file.read()
-        transcribed_text = await sarvam_client.transcribe_audio(
-            audio_bytes, filename=file.filename or "recording.wav"
-        )
+        print(f"DEBUG: Received audio file {file.filename}, size {len(audio_bytes)} bytes")
+        
+        try:
+            transcribed_text = await sarvam_client.transcribe_audio(
+                audio_bytes, filename=file.filename or "recording.wav"
+            )
+            print(f"DEBUG: Transcribed text: '{transcribed_text}'")
+        except Exception as stt_err:
+            print(f"DEBUG: STT Error details: {stt_err}")
+            raise stt_err
 
         if not transcribed_text.strip():
             return {
                 "session_id": session.session_id,
                 "user_text": "",
-                "reply": "I couldn't quite hear that. Could you repeat that?",
+                "reply": "I couldn't quite catch that audio. Try speaking clearly or type your message.",
                 "audio_base64": None,
                 "phase": session.phase,
             }
@@ -100,6 +107,8 @@ async def chat_voice(
             "block_duration_minutes": session.block_duration_minutes,
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
