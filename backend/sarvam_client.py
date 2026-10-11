@@ -13,9 +13,10 @@ class SarvamClient:
             "api-subscription-key": self.api_key,
         }
 
-    async def transcribe_audio(self, audio_bytes: bytes, filename: str = "audio.wav") -> str:
+    async def transcribe_audio(self, audio_bytes: bytes, filename: str = "audio.wav", language_code: Optional[str] = None) -> Tuple[str, str]:
         """
-        Transcribes speech using Sarvam STT (Saaras:v2).
+        Transcribes speech using Sarvam STT (Saaras:v3).
+        Returns tuple of (transcribed_text, detected_language_code).
         """
         if not self.api_key:
             raise ValueError("SARVAM_API_KEY is not configured.")
@@ -26,9 +27,10 @@ class SarvamClient:
             "file": (filename, audio_bytes, mime)
         }
         data = {
-            "model": "saaras:v3",
-            "language_code": "en-IN"
+            "model": "saaras:v3"
         }
+        if language_code and language_code != "auto":
+            data["language_code"] = language_code
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
@@ -39,7 +41,9 @@ class SarvamClient:
             )
             response.raise_for_status()
             result = response.json()
-            return result.get("transcript", "")
+            transcript = result.get("transcript", "")
+            detected_lang = result.get("language_code", "en-IN")
+            return transcript, detected_lang
 
     async def chat_completion(self, history: list) -> Tuple[str, Optional[Dict[str, Any]]]:
         """
@@ -83,17 +87,22 @@ class SarvamClient:
 
         return clean_text, state_data
 
-    async def synthesize_speech(self, text: str) -> Optional[str]:
+    async def synthesize_speech(self, text: str, language_code: str = "en-IN") -> Optional[str]:
         """
         Synthesizes text to speech using active Sarvam TTS ('bulbul:v3' with speaker 'aditya').
+        Supports all Sarvam Indic languages: en-IN, hi-IN, bn-IN, kn-IN, ml-IN, mr-IN, od-IN, pa-IN, ta-IN, te-IN, gu-IN.
         """
         if not self.api_key:
             return None
 
+        # Fallback to en-IN if language_code is not supported
+        valid_langs = ["en-IN", "hi-IN", "bn-IN", "kn-IN", "ml-IN", "mr-IN", "od-IN", "pa-IN", "ta-IN", "te-IN", "gu-IN"]
+        target_lang = language_code if language_code in valid_langs else "en-IN"
+
         url = f"{SARVAM_BASE_URL}/text-to-speech"
         payload = {
-            "inputs": [text[:500]],  # Cap text to keep synthesis fast and reliable
-            "target_language_code": "en-IN",
+            "inputs": [text[:500]],
+            "target_language_code": target_lang,
             "speaker": "aditya",
             "model": "bulbul:v3"
         }
@@ -112,6 +121,14 @@ class SarvamClient:
                     if audios:
                         return audios[0]
                 else:
+                    # Fallback to en-IN if the specific Indic dialect fails
+                    if target_lang != "en-IN":
+                        payload["target_language_code"] = "en-IN"
+                        res2 = await client.post(url, headers=headers, json=payload)
+                        if res2.status_code == 200:
+                            audios = res2.json().get("audios", [])
+                            if audios:
+                                return audios[0]
                     print(f"TTS warning ({response.status_code}): {response.text}")
         except Exception as e:
             print(f"TTS synthesis exception: {e}")

@@ -80,8 +80,27 @@
         </div>
       </div>
 
-      <!-- Session Meta Badges & Reset -->
+      <!-- Session Meta Badges, Language Selector & Reset -->
       <div class="flex items-center space-x-2">
+        
+        <!-- Language Selector -->
+        <div class="flex items-center space-x-1 bg-white border border-sand-200 rounded-lg px-2 py-1 shadow-sm">
+          <span class="text-[11px] text-sand-700 font-medium">🌐</span>
+          <select id="language-select" class="bg-transparent text-xs text-sand-900 font-medium focus:outline-none cursor-pointer">
+            <option value="auto">Auto Detect</option>
+            <option value="en-IN" selected>English (India)</option>
+            <option value="hi-IN">Hindi (हिंदी)</option>
+            <option value="bn-IN">Bengali (বাংলা)</option>
+            <option value="ta-IN">Tamil (தமிழ்)</option>
+            <option value="te-IN">Telugu (తెలుగు)</option>
+            <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
+            <option value="mr-IN">Marathi (मराठी)</option>
+            <option value="gu-IN">Gujarati (ગુજરાતી)</option>
+            <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
+            <option value="ml-IN">Malayalam (മലയാളം)</option>
+          </select>
+        </div>
+
         <div class="hidden sm:flex items-center space-x-2 text-xs">
           <span id="session-phase-badge" class="px-2.5 py-1 rounded-lg bg-sand-100 text-sand-700 font-medium border border-sand-200">
             Phase: Intake
@@ -146,6 +165,24 @@
           <button onclick="setTimerMinutes(25)" class="py-1.5 bg-sand-100/70 hover:bg-sand-100 rounded-lg text-sand-700 font-medium transition">25m Focus</button>
           <button onclick="setTimerMinutes(50)" class="py-1.5 bg-sand-100/70 hover:bg-sand-100 rounded-lg text-sand-700 font-medium transition">50m Deep</button>
           <button onclick="setTimerMinutes(5)" class="py-1.5 bg-sand-100/70 hover:bg-sand-100 rounded-lg text-sand-700 font-medium transition">5m Break</button>
+        </div>
+
+        <!-- Custom Focus Time Input -->
+        <div class="w-full mt-3 flex items-center space-x-1.5">
+          <input
+            type="number"
+            id="custom-minutes-input"
+            min="1"
+            max="180"
+            placeholder="Custom mins..."
+            class="flex-1 bg-sand-50 border border-sand-200 rounded-lg px-2.5 py-1.5 text-xs text-sand-900 placeholder-sand-700 focus:outline-none focus:border-sage-500 transition"
+          />
+          <button
+            id="set-custom-time-btn"
+            class="px-2.5 py-1.5 bg-sand-100 hover:bg-sand-200 text-sand-800 rounded-lg text-xs font-semibold border border-sand-200 transition"
+          >
+            Set Time
+          </button>
         </div>
 
       </div>
@@ -246,6 +283,25 @@
     const statusText = document.getElementById("status-text");
     const coachAudio = document.getElementById("coach-audio");
     const newSessionBtn = document.getElementById("new-session-btn");
+    const languageSelect = document.getElementById("language-select");
+    const customMinutesInput = document.getElementById("custom-minutes-input");
+    const setCustomTimeBtn = document.getElementById("set-custom-time-btn");
+
+    setCustomTimeBtn.addEventListener("click", () => {
+      const mins = parseInt(customMinutesInput.value, 10);
+      if (mins && mins > 0 && mins <= 180) {
+        setTimerMinutes(mins);
+        currentTaskDisplay.textContent = `Custom Block (${mins} mins)`;
+      } else {
+        alert("Please enter a valid time between 1 and 180 minutes.");
+      }
+    });
+
+    customMinutesInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        setCustomTimeBtn.click();
+      }
+    });
 
     newSessionBtn.addEventListener("click", () => {
       if (confirm("Start a fresh focus session? This will reset the timer and conversation.")) {
@@ -388,10 +444,11 @@
       setStatus(true, "Arjun is reviewing your plan...");
 
       try {
+        const selectedLang = languageSelect ? languageSelect.value : "en-IN";
         const res = await fetch("/api/chat/text", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId, message: message })
+          body: JSON.stringify({ session_id: sessionId, message: message, language_code: selectedLang })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Server error");
@@ -465,9 +522,11 @@
 
     async function sendVoiceChat(audioBlob) {
       const ext = audioBlob.type.includes('webm') ? 'webm' : 'wav';
+      const selectedLang = languageSelect ? languageSelect.value : "auto";
       const formData = new FormData();
       formData.append("file", audioBlob, `speech.${ext}`);
       formData.append("session_id", sessionId);
+      formData.append("language_code", selectedLang);
 
       try {
         const res = await fetch("/api/chat/voice", {
@@ -478,6 +537,10 @@
         if (!res.ok) throw new Error(data.detail || `Server error ${res.status}`);
         if (data.user_text) {
           appendMessage("user", data.user_text);
+        }
+        if (data.detected_lang && languageSelect && languageSelect.value === "auto") {
+          // If auto-detect was chosen, show user what was detected
+          console.log("Auto-detected language:", data.detected_lang);
         }
         handleCoachResponse(data);
       } catch (err) {

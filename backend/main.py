@@ -27,11 +27,13 @@ sarvam_client = SarvamClient()
 class TextChatRequest(BaseModel):
     session_id: Optional[str] = None
     message: str
+    language_code: Optional[str] = "en-IN"
 
 
 class CheckInRequest(BaseModel):
     session_id: str
     event: str  # "block_finished", "break_finished", "timer_abandoned"
+    language_code: Optional[str] = "en-IN"
 
 
 @app.post("/api/chat/text")
@@ -45,7 +47,7 @@ async def chat_text(req: TextChatRequest):
         if state_data:
             session_manager.update_state(session.session_id, state_data)
 
-        audio_base64 = await sarvam_client.synthesize_speech(reply_text)
+        audio_base64 = await sarvam_client.synthesize_speech(reply_text, language_code=req.language_code or "en-IN")
 
         return {
             "session_id": session.session_id,
@@ -62,19 +64,20 @@ async def chat_text(req: TextChatRequest):
 @app.post("/api/chat/voice")
 async def chat_voice(
     file: UploadFile = File(...),
-    session_id: Optional[str] = Form(None)
+    session_id: Optional[str] = Form(None),
+    language_code: Optional[str] = Form(None)
 ):
     session = session_manager.get_or_create(session_id)
 
     try:
         audio_bytes = await file.read()
-        print(f"DEBUG: Received audio file {file.filename}, size {len(audio_bytes)} bytes")
+        print(f"DEBUG: Received audio file {file.filename}, size {len(audio_bytes)} bytes, requested lang: {language_code}")
         
         try:
-            transcribed_text = await sarvam_client.transcribe_audio(
-                audio_bytes, filename=file.filename or "recording.wav"
+            transcribed_text, detected_lang = await sarvam_client.transcribe_audio(
+                audio_bytes, filename=file.filename or "recording.wav", language_code=language_code
             )
-            print(f"DEBUG: Transcribed text: '{transcribed_text}'")
+            print(f"DEBUG: Transcribed text: '{transcribed_text}', Detected lang: {detected_lang}")
         except Exception as stt_err:
             print(f"DEBUG: STT Error details: {stt_err}")
             raise stt_err
@@ -95,11 +98,14 @@ async def chat_voice(
         if state_data:
             session_manager.update_state(session.session_id, state_data)
 
-        audio_base64 = await sarvam_client.synthesize_speech(reply_text)
+        # Synthesize speech in detected or requested Indic language
+        tts_lang = language_code if (language_code and language_code != "auto") else detected_lang
+        audio_base64 = await sarvam_client.synthesize_speech(reply_text, language_code=tts_lang)
 
         return {
             "session_id": session.session_id,
             "user_text": transcribed_text,
+            "detected_lang": detected_lang,
             "reply": reply_text,
             "audio_base64": audio_base64,
             "phase": session.phase,
