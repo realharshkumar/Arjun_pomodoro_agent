@@ -15,7 +15,7 @@ class SarvamClient:
 
     async def transcribe_audio(self, audio_bytes: bytes, filename: str = "audio.wav") -> str:
         """
-        Transcribes speech using Sarvam STT (Saaras).
+        Transcribes speech using Sarvam STT (Saaras:v2).
         """
         if not self.api_key:
             raise ValueError("SARVAM_API_KEY is not configured.")
@@ -44,7 +44,7 @@ class SarvamClient:
     async def chat_completion(self, history: list) -> Tuple[str, Optional[Dict[str, Any]]]:
         """
         Calls Sarvam Chat/LLM API with conversation history.
-        Parses Arjun's response and optional JSON state block.
+        Using active model 'sarvam-105b-conversations'.
         """
         if not self.api_key:
             raise ValueError("SARVAM_API_KEY is not configured.")
@@ -53,7 +53,7 @@ class SarvamClient:
         messages = [{"role": "system", "content": ARJUN_SYSTEM_PROMPT}] + history
 
         payload = {
-            "model": "sarvam-2b",
+            "model": "sarvam-105b-conversations",
             "messages": messages,
             "temperature": 0.5,
             "max_tokens": 400
@@ -85,23 +85,17 @@ class SarvamClient:
 
     async def synthesize_speech(self, text: str) -> Optional[str]:
         """
-        Synthesizes text to speech using Sarvam TTS (Bulbul).
-        Returns base64 encoded audio string (or None on failure).
+        Synthesizes text to speech using active Sarvam TTS ('bulbul:v3' with speaker 'aditya').
         """
         if not self.api_key:
             return None
 
         url = f"{SARVAM_BASE_URL}/text-to-speech"
         payload = {
-            "inputs": [text],
+            "inputs": [text[:500]],  # Cap text to keep synthesis fast and reliable
             "target_language_code": "en-IN",
-            "speaker": "arvind",  # Natural Indian English male voice
-            "pitch": 0.0,
-            "pace": 1.0,
-            "loudness": 1.5,
-            "speech_sample_rate": 16000,
-            "enable_preprocessing": True,
-            "model": "bulbul:v1"
+            "speaker": "aditya",
+            "model": "bulbul:v3"
         }
 
         headers = {
@@ -112,13 +106,14 @@ class SarvamClient:
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(url, headers=headers, json=payload)
-                response.raise_for_status()
-                data = response.json()
-                audios = data.get("audios", [])
-                if audios:
-                    return audios[0]  # Base64 string from Bulbul
+                if response.status_code == 200:
+                    data = response.json()
+                    audios = data.get("audios", [])
+                    if audios:
+                        return audios[0]
+                else:
+                    print(f"TTS warning ({response.status_code}): {response.text}")
         except Exception as e:
-            print(f"TTS synthesis warning: {e}")
-            return None
+            print(f"TTS synthesis exception: {e}")
 
         return None

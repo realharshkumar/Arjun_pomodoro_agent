@@ -34,6 +34,10 @@
       </div>
     </div>
     <div class="flex items-center space-x-2">
+      <button id="new-session-btn" class="px-3 py-1 text-xs rounded-full bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 transition flex items-center space-x-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <span>New Session</span>
+      </button>
       <span id="session-phase-badge" class="px-3 py-1 text-xs rounded-full bg-slate-800 text-indigo-300 border border-slate-700">
         Phase: Intake
       </span>
@@ -170,6 +174,15 @@
     const statusIndicator = document.getElementById("status-indicator");
     const statusText = document.getElementById("status-text");
     const coachAudio = document.getElementById("coach-audio");
+
+    const newSessionBtn = document.getElementById("new-session-btn");
+
+    newSessionBtn.addEventListener("click", () => {
+      if (confirm("Start a new focus coaching session?")) {
+        localStorage.removeItem("arjun_session_id");
+        location.reload();
+      }
+    });
 
     // Audio recording state
     let mediaRecorder = null;
