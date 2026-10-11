@@ -21,13 +21,13 @@ class SarvamClient:
             raise ValueError("SARVAM_API_KEY is not configured.")
 
         url = f"{SARVAM_BASE_URL}/speech-to-text"
+        mime = "audio/webm" if filename.endswith(".webm") else "audio/wav"
         files = {
-            "file": (filename, audio_bytes, "audio/wav")
+            "file": (filename, audio_bytes, mime)
         }
         data = {
-            "model": "saaras:v2",
-            "language_code": "en-IN",
-            "with_diarization": "false"
+            "model": "saaras:v3",
+            "language_code": "en-IN"
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:

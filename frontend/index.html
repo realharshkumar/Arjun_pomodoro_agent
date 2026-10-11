@@ -346,15 +346,25 @@
     async function startRecording() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+        let options = {};
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          options = { mimeType: 'audio/webm;codecs=opus' };
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          options = { mimeType: 'audio/webm' };
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          options = { mimeType: 'audio/mp4' };
+        }
+        
+        mediaRecorder = new MediaRecorder(stream, options);
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) audioChunks.push(e.data);
+          if (e.data && e.data.size > 0) audioChunks.push(e.data);
         };
 
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+          const mimeType = mediaRecorder.mimeType || 'audio/webm';
+          const audioBlob = new Blob(audioChunks, { type: mimeType });
           stream.getTracks().forEach(track => track.stop());
           await sendVoiceChat(audioBlob);
         };
@@ -363,7 +373,7 @@
         isRecording = true;
         micBtn.classList.add("bg-red-600", "pulse-animation");
         micBtn.classList.remove("bg-indigo-600");
-        setStatus(true, "Listening to you...");
+        setStatus(true, "Listening to you... Click mic again when done.");
       } catch (err) {
         alert("Microphone permission denied or unsupported.");
         console.error(err);
@@ -381,8 +391,9 @@
     }
 
     async function sendVoiceChat(audioBlob) {
+      const ext = audioBlob.type.includes('webm') ? 'webm' : 'wav';
       const formData = new FormData();
-      formData.append("file", audioBlob, "speech.wav");
+      formData.append("file", audioBlob, `speech.${ext}`);
       formData.append("session_id", sessionId);
 
       try {
