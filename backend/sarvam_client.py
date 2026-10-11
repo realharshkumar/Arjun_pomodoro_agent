@@ -45,7 +45,7 @@ class SarvamClient:
             detected_lang = result.get("language_code", "en-IN")
             return transcript, detected_lang
 
-    async def chat_completion(self, history: list) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def chat_completion(self, history: list, response_language: Optional[str] = None) -> Tuple[str, Optional[Dict[str, Any]]]:
         """
         Calls Sarvam Chat/LLM API with conversation history.
         Using active model 'sarvam-105b-conversations'.
@@ -54,7 +54,24 @@ class SarvamClient:
             raise ValueError("SARVAM_API_KEY is not configured.")
 
         url = f"{SARVAM_BASE_URL}/v1/chat/completions"
-        messages = [{"role": "system", "content": ARJUN_SYSTEM_PROMPT}] + history
+        system_content = ARJUN_SYSTEM_PROMPT
+        if response_language and response_language != "auto":
+            lang_names = {
+                "hi-IN": "Hindi (हिंदी script Devanagari)",
+                "bn-IN": "Bengali (বাংলা script)",
+                "ta-IN": "Tamil (தமிழ் script)",
+                "te-IN": "Telugu (తెలుగు script)",
+                "kn-IN": "Kannada (ಕನ್ನಡ script)",
+                "mr-IN": "Marathi (मराठी script Devanagari)",
+                "gu-IN": "Gujarati (ગુજરાતી script)",
+                "pa-IN": "Punjabi (ਪੰਜਾਬੀ script)",
+                "ml-IN": "Malayalam (മലയാളം script)",
+                "en-IN": "Indian English"
+            }
+            target_lang_name = lang_names.get(response_language, response_language)
+            system_content += f"\n\nIMPORTANT: The student has selected their preferred language as {target_lang_name}. You MUST reply entirely in {target_lang_name} using its native script."
+
+        messages = [{"role": "system", "content": system_content}] + history
 
         payload = {
             "model": "sarvam-105b-conversations",

@@ -42,7 +42,9 @@ async def chat_text(req: TextChatRequest):
     session_manager.add_user_message(session.session_id, req.message)
 
     try:
-        reply_text, state_data = await sarvam_client.chat_completion(session.history)
+        reply_text, state_data = await sarvam_client.chat_completion(
+            session.history, response_language=req.language_code
+        )
         session_manager.add_assistant_message(session.session_id, reply_text)
         if state_data:
             session_manager.update_state(session.session_id, state_data)
@@ -93,14 +95,16 @@ async def chat_voice(
 
         session_manager.add_user_message(session.session_id, transcribed_text)
 
-        reply_text, state_data = await sarvam_client.chat_completion(session.history)
+        target_lang = language_code if (language_code and language_code != "auto") else detected_lang
+        reply_text, state_data = await sarvam_client.chat_completion(
+            session.history, response_language=target_lang
+        )
         session_manager.add_assistant_message(session.session_id, reply_text)
         if state_data:
             session_manager.update_state(session.session_id, state_data)
 
         # Synthesize speech in detected or requested Indic language
-        tts_lang = language_code if (language_code and language_code != "auto") else detected_lang
-        audio_base64 = await sarvam_client.synthesize_speech(reply_text, language_code=tts_lang)
+        audio_base64 = await sarvam_client.synthesize_speech(reply_text, language_code=target_lang)
 
         return {
             "session_id": session.session_id,
