@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -23,6 +24,7 @@
               200: '#EAEAE5',
               300: '#DDDCD5',
               700: '#64635E',
+              800: '#403F3B',
               900: '#262523',
             },
             sage: {
@@ -31,11 +33,21 @@
               500: '#4F7C65',
               600: '#3D624F',
               700: '#2E4C3C',
+              800: '#21372B',
             },
             terracotta: {
               50: '#FDF6F3',
               500: '#E06D53',
               600: '#C8573D',
+            },
+            night: {
+              950: '#0F1012',
+              900: '#16171A',
+              850: '#1C1E22',
+              800: '#25272D',
+              700: '#383B42',
+              400: '#9B9EA7',
+              200: '#E2E4E9',
             }
           }
         }
@@ -47,7 +59,7 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #EAEAE5; border-radius: 999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #DDDCD5; }
+    .dark ::-webkit-scrollbar-thumb { background: #25272D; }
 
     .pulse-ring {
       box-shadow: 0 0 0 0 rgba(224, 109, 83, 0.5);
@@ -60,33 +72,33 @@
     }
   </style>
 </head>
-<body class="bg-sand-50 text-sand-900 min-h-screen flex flex-col antialiased selection:bg-sage-100 selection:text-sage-700">
+<body class="bg-sand-50 dark:bg-night-950 text-sand-900 dark:text-night-200 min-h-screen flex flex-col antialiased selection:bg-sage-100 selection:text-sage-700 transition-colors duration-200">
 
   <!-- Top Navigation Bar -->
-  <header class="w-full bg-white/80 backdrop-blur-md border-b border-sand-200 sticky top-0 z-20">
+  <header class="w-full bg-white/80 dark:bg-night-900/80 backdrop-blur-md border-b border-sand-200 dark:border-night-800 sticky top-0 z-20 transition-colors">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       
       <!-- Brand & Mentor Persona -->
       <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-xl bg-sage-50 border border-sage-100 flex items-center justify-center font-semibold text-sage-600 shadow-sm">
+        <div class="w-9 h-9 rounded-xl bg-sage-50 dark:bg-sage-800/40 border border-sage-100 dark:border-sage-700/50 flex items-center justify-center font-semibold text-sage-600 dark:text-sage-400 shadow-sm">
           A
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h1 class="text-sm font-semibold tracking-tight text-sand-900">Arjun</h1>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-sage-50 text-sage-600 border border-sage-100">Senior Mentor</span>
+            <h1 class="text-sm font-semibold tracking-tight text-sand-900 dark:text-white">Arjun</h1>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-sage-50 dark:bg-sage-800/40 text-sage-600 dark:text-sage-400 border border-sage-100 dark:border-sage-700/50">Senior Mentor</span>
           </div>
-          <p class="text-xs text-sand-700">Focus & Pomodoro Accountability</p>
+          <p class="text-xs text-sand-700 dark:text-night-400">Focus & Pomodoro Accountability</p>
         </div>
       </div>
 
-      <!-- Session Meta Badges, Language Selector & Reset -->
+      <!-- Controls: Language Selector, Phase, Dark/Light Mode, Reset -->
       <div class="flex items-center space-x-2">
         
         <!-- Language Selector -->
-        <div class="flex items-center space-x-1 bg-white border border-sand-200 rounded-lg px-2 py-1 shadow-sm">
-          <span class="text-[11px] text-sand-700 font-medium">🌐</span>
-          <select id="language-select" class="bg-transparent text-xs text-sand-900 font-medium focus:outline-none cursor-pointer">
+        <div class="flex items-center space-x-1 bg-white dark:bg-night-850 border border-sand-200 dark:border-night-700 rounded-lg px-2 py-1 shadow-sm">
+          <span class="text-[11px] text-sand-700 dark:text-night-400 font-medium">🌐</span>
+          <select id="language-select" class="bg-transparent text-xs text-sand-900 dark:text-night-200 font-medium focus:outline-none cursor-pointer">
             <option value="auto">Auto Detect</option>
             <option value="en-IN" selected>English (India)</option>
             <option value="hi-IN">Hindi (हिंदी)</option>
@@ -102,15 +114,24 @@
         </div>
 
         <div class="hidden sm:flex items-center space-x-2 text-xs">
-          <span id="session-phase-badge" class="px-2.5 py-1 rounded-lg bg-sand-100 text-sand-700 font-medium border border-sand-200">
+          <span id="session-phase-badge" class="px-2.5 py-1 rounded-lg bg-sand-100 dark:bg-night-850 text-sand-700 dark:text-night-400 font-medium border border-sand-200 dark:border-night-700">
             Phase: Intake
           </span>
-          <span id="blocks-completed-badge" class="px-2.5 py-1 rounded-lg bg-sage-50 text-sage-600 font-medium border border-sage-100">
+          <span id="blocks-completed-badge" class="px-2.5 py-1 rounded-lg bg-sage-50 dark:bg-sage-800/40 text-sage-600 dark:text-sage-400 font-medium border border-sage-100 dark:border-sage-700/50">
             0 Blocks Done
           </span>
         </div>
 
-        <button id="new-session-btn" title="Start New Session" class="px-3 py-1.5 text-xs font-medium rounded-lg text-sand-700 hover:text-sand-900 bg-white hover:bg-sand-100 border border-sand-200 transition shadow-sm flex items-center space-x-1.5">
+        <!-- Aesthetic Theme Switcher (Dark/Light) -->
+        <button id="theme-toggle-btn" title="Toggle Theme" class="p-2 text-sand-700 dark:text-night-400 hover:text-sand-900 dark:hover:text-white bg-white dark:bg-night-850 hover:bg-sand-100 dark:hover:bg-night-800 border border-sand-200 dark:border-night-700 rounded-lg transition shadow-sm flex items-center justify-center">
+          <!-- Sun Icon (shown in dark mode) -->
+          <svg id="sun-icon" class="w-3.5 h-3.5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+          <!-- Moon Icon (shown in light mode) -->
+          <svg id="moon-icon" class="w-3.5 h-3.5 block dark:hidden text-sand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+
+        <!-- New Session Reset -->
+        <button id="new-session-btn" title="Start New Session" class="px-3 py-1.5 text-xs font-medium rounded-lg text-sand-700 dark:text-night-400 hover:text-sand-900 dark:hover:text-white bg-white dark:bg-night-850 hover:bg-sand-100 dark:hover:bg-night-800 border border-sand-200 dark:border-night-700 transition shadow-sm flex items-center space-x-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           <span>New Session</span>
         </button>
@@ -125,46 +146,46 @@
     <aside class="md:col-span-4 flex flex-col space-y-4">
       
       <!-- Pomodoro Card -->
-      <div class="bg-white rounded-2xl p-6 border border-sand-200 shadow-sm flex flex-col items-center text-center">
+      <div class="bg-white dark:bg-night-900 rounded-2xl p-6 border border-sand-200 dark:border-night-800 shadow-sm flex flex-col items-center text-center transition-colors">
         
         <div class="w-full flex items-center justify-between mb-4">
-          <span class="text-xs font-semibold uppercase tracking-wider text-sand-700">Focus Block</span>
-          <span id="timer-type-badge" class="text-[11px] font-medium text-sage-600 bg-sage-50 px-2 py-0.5 rounded-full border border-sage-100">Pomodoro</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-sand-700 dark:text-night-400">Focus Block</span>
+          <span id="timer-type-badge" class="text-[11px] font-medium text-sage-600 dark:text-sage-400 bg-sage-50 dark:bg-sage-800/40 px-2 py-0.5 rounded-full border border-sage-100 dark:border-sage-700/50">Pomodoro</span>
         </div>
 
         <!-- Current Focus Target -->
-        <div class="w-full bg-sand-50 rounded-xl px-3.5 py-2.5 border border-sand-200/60 mb-5">
-          <div class="text-[11px] uppercase tracking-wider font-semibold text-sand-700 mb-0.5">Active Task</div>
-          <div id="current-task-display" class="text-xs font-medium text-sand-900 truncate">
+        <div class="w-full bg-sand-50 dark:bg-night-850 rounded-xl px-3.5 py-2.5 border border-sand-200/60 dark:border-night-700/60 mb-5">
+          <div class="text-[11px] uppercase tracking-wider font-semibold text-sand-700 dark:text-night-400 mb-0.5">Active Task</div>
+          <div id="current-task-display" class="text-xs font-medium text-sand-900 dark:text-white truncate">
             No active task yet
           </div>
         </div>
 
         <!-- Big Clean Monospace Timer -->
-        <div id="timer-display" class="text-6xl font-mono font-bold tracking-tight text-sand-900 my-2">
+        <div id="timer-display" class="text-6xl font-mono font-bold tracking-tight text-sand-900 dark:text-white my-2">
           25:00
         </div>
 
-        <p class="text-[11px] text-sand-700 mb-5">Take it one block at a time. No distractions.</p>
+        <p class="text-[11px] text-sand-700 dark:text-night-400 mb-5">Take it one block at a time. No distractions.</p>
 
         <!-- Timer Controls -->
         <div class="flex items-center space-x-2 w-full">
           <button id="timer-start-btn" class="flex-1 py-2.5 bg-sage-600 hover:bg-sage-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
             Start Focus
           </button>
-          <button id="timer-pause-btn" class="px-4 py-2.5 bg-sand-100 hover:bg-sand-200 text-sand-900 rounded-xl text-xs font-medium transition">
+          <button id="timer-pause-btn" class="px-4 py-2.5 bg-sand-100 dark:bg-night-800 hover:bg-sand-200 dark:hover:bg-night-700 text-sand-900 dark:text-night-200 rounded-xl text-xs font-medium transition">
             Pause
           </button>
-          <button id="timer-reset-btn" class="px-3 py-2.5 bg-white hover:bg-sand-100 text-sand-700 border border-sand-200 rounded-xl text-xs transition" title="Reset Timer">
+          <button id="timer-reset-btn" class="px-3 py-2.5 bg-white dark:bg-night-850 hover:bg-sand-100 dark:hover:bg-night-800 text-sand-700 dark:text-night-400 border border-sand-200 dark:border-night-700 rounded-xl text-xs transition" title="Reset Timer">
             ↺
           </button>
         </div>
 
         <!-- Preset Chips -->
-        <div class="w-full grid grid-cols-3 gap-1.5 mt-4 pt-4 border-t border-sand-100 text-[11px]">
-          <button onclick="setTimerMinutes(25)" class="py-1.5 bg-sand-100/70 hover:bg-sand-100 rounded-lg text-sand-700 font-medium transition">25m Focus</button>
-          <button onclick="setTimerMinutes(50)" class="py-1.5 bg-sand-100/70 hover:bg-sand-100 rounded-lg text-sand-700 font-medium transition">50m Deep</button>
-          <button onclick="setTimerMinutes(5)" class="py-1.5 bg-sand-100/70 hover:bg-sand-100 rounded-lg text-sand-700 font-medium transition">5m Break</button>
+        <div class="w-full grid grid-cols-3 gap-1.5 mt-4 pt-4 border-t border-sand-100 dark:border-night-800 text-[11px]">
+          <button onclick="setTimerMinutes(25)" class="py-1.5 bg-sand-100/70 dark:bg-night-850 hover:bg-sand-100 dark:hover:bg-night-800 rounded-lg text-sand-700 dark:text-night-300 font-medium transition">25m Focus</button>
+          <button onclick="setTimerMinutes(50)" class="py-1.5 bg-sand-100/70 dark:bg-night-850 hover:bg-sand-100 dark:hover:bg-night-800 rounded-lg text-sand-700 dark:text-night-300 font-medium transition">50m Deep</button>
+          <button onclick="setTimerMinutes(5)" class="py-1.5 bg-sand-100/70 dark:bg-night-850 hover:bg-sand-100 dark:hover:bg-night-800 rounded-lg text-sand-700 dark:text-night-300 font-medium transition">5m Break</button>
         </div>
 
         <!-- Custom Focus Time Input -->
@@ -175,11 +196,11 @@
             min="1"
             max="180"
             placeholder="Custom mins..."
-            class="flex-1 bg-sand-50 border border-sand-200 rounded-lg px-2.5 py-1.5 text-xs text-sand-900 placeholder-sand-700 focus:outline-none focus:border-sage-500 transition"
+            class="flex-1 bg-sand-50 dark:bg-night-850 border border-sand-200 dark:border-night-700 rounded-lg px-2.5 py-1.5 text-xs text-sand-900 dark:text-white placeholder-sand-700 dark:placeholder-night-400 focus:outline-none focus:border-sage-500 transition"
           />
           <button
             id="set-custom-time-btn"
-            class="px-2.5 py-1.5 bg-sand-100 hover:bg-sand-200 text-sand-800 rounded-lg text-xs font-semibold border border-sand-200 transition"
+            class="px-2.5 py-1.5 bg-sand-100 dark:bg-night-800 hover:bg-sand-200 dark:hover:bg-night-700 text-sand-800 dark:text-night-200 rounded-lg text-xs font-semibold border border-sand-200 dark:border-night-700 transition"
           >
             Set Time
           </button>
@@ -188,25 +209,25 @@
       </div>
 
       <!-- Mentor Wisdom Note -->
-      <div class="bg-sage-50/70 border border-sage-100/80 rounded-2xl p-4 text-xs leading-relaxed text-sage-700">
-        <p class="font-semibold text-sage-800 mb-1">💡 Arjun's Rule</p>
+      <div class="bg-sage-50/70 dark:bg-night-900 border border-sage-100/80 dark:border-night-800 rounded-2xl p-4 text-xs leading-relaxed text-sage-700 dark:text-sage-400 transition-colors">
+        <p class="font-semibold text-sage-800 dark:text-sage-300 mb-1">💡 Arjun's Rule</p>
         Don't try to study the entire syllabus in one sitting. Pick one single chapter or formula sheet, sit for 25 minutes, and close all other tabs.
       </div>
 
     </aside>
 
     <!-- Right: Clean Coaching Conversation (8 Cols) -->
-    <section class="md:col-span-8 bg-white rounded-2xl border border-sand-200 shadow-sm flex flex-col overflow-hidden h-[620px]">
+    <section class="md:col-span-8 bg-white dark:bg-night-900 rounded-2xl border border-sand-200 dark:border-night-800 shadow-sm flex flex-col overflow-hidden h-[620px] transition-colors">
       
       <!-- Conversation History -->
       <div id="chat-messages" class="flex-grow p-6 space-y-4 overflow-y-auto">
         
         <!-- Mentor Welcome Message -->
         <div class="flex items-start space-x-3 max-w-[85%]">
-          <div class="w-7 h-7 rounded-lg bg-sage-100 text-sage-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+          <div class="w-7 h-7 rounded-lg bg-sage-100 dark:bg-sage-800/40 text-sage-700 dark:text-sage-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
             A
           </div>
-          <div class="bg-sand-100/80 text-sand-900 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed border border-sand-200/50">
+          <div class="bg-sand-100/80 dark:bg-night-850 text-sand-900 dark:text-night-200 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed border border-sand-200/50 dark:border-night-700/50">
             Hey! I'm Arjun. What exam or assignment are you tackling right now, and how much time do you actually have? Let's cut the stress and build a quick plan.
           </div>
         </div>
@@ -214,19 +235,19 @@
       </div>
 
       <!-- Input Deck -->
-      <div class="p-4 bg-sand-50/60 border-t border-sand-200">
+      <div class="p-4 bg-sand-50/60 dark:bg-night-850/60 border-t border-sand-200 dark:border-night-800 transition-colors">
         
         <!-- Status Indicator Pill -->
-        <div id="status-indicator" class="text-xs text-sand-700 mb-2.5 flex items-center space-x-2 hidden">
+        <div id="status-indicator" class="text-xs text-sand-700 dark:text-night-400 mb-2.5 flex items-center space-x-2 hidden">
           <span class="inline-block w-2 h-2 rounded-full bg-terracotta-500 animate-ping"></span>
-          <span id="status-text" class="font-medium text-sand-700">Listening to you...</span>
+          <span id="status-text" class="font-medium text-sand-700 dark:text-night-300">Listening to you...</span>
         </div>
 
         <div class="flex items-center space-x-2">
           
           <!-- Mic Record Button -->
-          <button id="mic-btn" title="Click to Speak" class="w-11 h-11 bg-white hover:bg-sand-100 border border-sand-200 text-sand-700 hover:text-sand-900 rounded-xl transition flex items-center justify-center flex-shrink-0 shadow-sm">
-            <svg id="mic-icon" class="w-5 h-5 text-sand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="mic-btn" title="Click to Speak" class="w-11 h-11 bg-white dark:bg-night-850 hover:bg-sand-100 dark:hover:bg-night-800 border border-sand-200 dark:border-night-700 text-sand-700 dark:text-night-300 hover:text-sand-900 dark:hover:text-white rounded-xl transition flex items-center justify-center flex-shrink-0 shadow-sm">
+            <svg id="mic-icon" class="w-5 h-5 text-sand-700 dark:text-night-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"></path>
             </svg>
           </button>
@@ -237,13 +258,13 @@
               type="text"
               id="user-input"
               placeholder="Tell Arjun what you're working on or click mic to talk..."
-              class="w-full bg-white border border-sand-200 rounded-xl px-4 py-2.5 text-sm text-sand-900 placeholder-sand-700 focus:outline-none focus:border-sage-500 focus:ring-1 focus:ring-sage-500 transition shadow-sm"
+              class="w-full bg-white dark:bg-night-850 border border-sand-200 dark:border-night-700 rounded-xl px-4 py-2.5 text-sm text-sand-900 dark:text-white placeholder-sand-700 dark:placeholder-night-400 focus:outline-none focus:border-sage-500 transition shadow-sm"
               autocomplete="off"
             />
             <button
               type="submit"
               id="send-btn"
-              class="px-4 py-2.5 bg-sand-900 hover:bg-black text-white rounded-xl text-xs font-semibold transition flex-shrink-0 shadow-sm"
+              class="px-4 py-2.5 bg-sand-900 dark:bg-white hover:bg-black dark:hover:bg-slate-200 text-white dark:text-night-950 rounded-xl text-xs font-semibold transition flex-shrink-0 shadow-sm"
             >
               Send
             </button>
@@ -260,6 +281,28 @@
   <audio id="coach-audio" class="hidden"></audio>
 
   <script>
+    // Theme Management (Dark / Light)
+    const themeToggleBtn = document.getElementById("theme-toggle-btn");
+    const htmlEl = document.documentElement;
+    
+    // Check saved theme or system preference
+    if (localStorage.getItem("arjun_theme") === "dark" || 
+        (!localStorage.getItem("arjun_theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+      htmlEl.classList.add("dark");
+    } else {
+      htmlEl.classList.remove("dark");
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      if (htmlEl.classList.contains("dark")) {
+        htmlEl.classList.remove("dark");
+        localStorage.setItem("arjun_theme", "light");
+      } else {
+        htmlEl.classList.add("dark");
+        localStorage.setItem("arjun_theme", "dark");
+      }
+    });
+
     let sessionId = localStorage.getItem("arjun_session_id") || "sess_" + Math.random().toString(36).substring(2, 9);
     localStorage.setItem("arjun_session_id", sessionId);
 
@@ -372,10 +415,11 @@
     async function onTimerComplete() {
       appendMessage("assistant", "⏰ Focus block completed! Checking in with Arjun...");
       try {
+        const selectedLang = languageSelect ? languageSelect.value : "en-IN";
         const res = await fetch("/api/session/check-in", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId, event: "block_finished" })
+          body: JSON.stringify({ session_id: sessionId, event: "block_finished", language_code: selectedLang })
         });
         const data = await res.json();
         handleCoachResponse(data);
@@ -390,14 +434,14 @@
       if (role === "assistant") {
         msgDiv.className = "flex items-start space-x-3 max-w-[85%]";
         msgDiv.innerHTML = `
-          <div class="w-7 h-7 rounded-lg bg-sage-100 text-sage-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">A</div>
-          <div class="bg-sand-100/80 text-sand-900 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed border border-sand-200/50">${text}</div>
+          <div class="w-7 h-7 rounded-lg bg-sage-100 dark:bg-sage-800/40 text-sage-700 dark:text-sage-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">A</div>
+          <div class="bg-sand-100/80 dark:bg-night-850 text-sand-900 dark:text-night-200 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed border border-sand-200/50 dark:border-night-700/50">${text}</div>
         `;
       } else {
         msgDiv.className = "flex items-start space-x-3 justify-end ml-auto max-w-[85%]";
         msgDiv.innerHTML = `
-          <div class="bg-sand-900 text-white rounded-2xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed shadow-sm">${text}</div>
-          <div class="w-7 h-7 rounded-lg bg-sand-200 text-sand-700 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">You</div>
+          <div class="bg-sand-900 dark:bg-sage-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed shadow-sm">${text}</div>
+          <div class="w-7 h-7 rounded-lg bg-sand-200 dark:bg-night-800 text-sand-700 dark:text-night-300 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">You</div>
         `;
       }
       chatMessages.appendChild(msgDiv);
@@ -539,7 +583,6 @@
           appendMessage("user", data.user_text);
         }
         if (data.detected_lang && languageSelect && languageSelect.value === "auto") {
-          // If auto-detect was chosen, show user what was detected
           console.log("Auto-detected language:", data.detected_lang);
         }
         handleCoachResponse(data);
