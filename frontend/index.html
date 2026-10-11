@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arjun — AI Study Focus Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .pulse-animation {
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center p-4 md:p-6">
+
+  <!-- Header -->
+  <header class="w-full max-w-4xl flex items-center justify-between pb-6 border-b border-slate-800">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-lg text-white shadow-lg">
+        A
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-white">Arjun</h1>
+        <p class="text-xs text-indigo-400 font-medium">Senior-Mentor Study Focus Coach</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <span id="session-phase-badge" class="px-3 py-1 text-xs rounded-full bg-slate-800 text-indigo-300 border border-slate-700">
+        Phase: Intake
+      </span>
+      <span id="blocks-completed-badge" class="px-3 py-1 text-xs rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
+        Completed: 0
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 flex-grow">
+    
+    <!-- Left Column: Focus Block Timer & Action Panel -->
+    <div class="md:col-span-1 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Current Block</h2>
+          <span id="timer-type-badge" class="text-xs px-2 py-0.5 rounded bg-indigo-950 text-indigo-300">Pomodoro</span>
+        </div>
+
+        <div class="bg-slate-900/90 rounded-xl p-4 mb-4 border border-slate-700 text-center">
+          <div id="current-task-display" class="text-sm font-medium text-slate-300 truncate">
+            No task active
+          </div>
+          <div id="timer-display" class="text-5xl font-mono font-bold text-white my-3 tracking-wider">
+            25:00
+          </div>
+          <div class="flex justify-center space-x-2">
+            <button id="timer-start-btn" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition">
+              Start Timer
+            </button>
+            <button id="timer-pause-btn" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold transition">
+              Pause
+            </button>
+            <button id="timer-reset-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg text-xs transition">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Timer Presets -->
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <button onclick="setTimerMinutes(25)" class="py-2 bg-slate-700/60 hover:bg-slate-700 rounded-lg text-slate-300">25m Focus</button>
+          <button onclick="setTimerMinutes(50)" class="py-2 bg-slate-700/60 hover:bg-slate-700 rounded-lg text-slate-300">50m Deep</button>
+          <button onclick="setTimerMinutes(5)" class="py-2 bg-slate-700/60 hover:bg-slate-700 rounded-lg text-slate-300">5m Break</button>
+        </div>
+      </div>
+
+      <!-- Quick Tips -->
+      <div class="mt-6 pt-4 border-t border-slate-700/60 text-xs text-slate-400 leading-relaxed">
+        <span class="font-semibold text-indigo-300">Arjun's rule:</span> Shrink the task to something you can complete in one block. Start immediately without overthinking.
+      </div>
+    </div>
+
+    <!-- Right Column: Conversational Coach Panel -->
+    <div class="md:col-span-2 bg-slate-800/80 border border-slate-700/80 rounded-2xl flex flex-col shadow-xl overflow-hidden">
+      
+      <!-- Dialogue Chat History -->
+      <div id="chat-messages" class="flex-grow p-4 md:p-6 space-y-4 overflow-y-auto max-h-[480px]">
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">A</div>
+          <div class="bg-slate-700/60 border border-slate-600/50 rounded-2xl rounded-tl-none p-3.5 text-sm text-slate-200 max-w-[85%] leading-relaxed">
+            Hey! I'm Arjun. What are we tackling today, and how much time do you actually have? Let's break it down and get to work.
+          </div>
+        </div>
+      </div>
+
+      <!-- Input and Voice Controls -->
+      <div class="p-4 bg-slate-900/80 border-t border-slate-700">
+        
+        <!-- Recording / Activity Indicator -->
+        <div id="status-indicator" class="text-xs text-slate-400 mb-2 flex items-center space-x-2 hidden">
+          <span class="inline-block w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+          <span id="status-text">Listening...</span>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Voice Record Mic Button -->
+          <button id="mic-btn" title="Hold or Click to Speak" class="p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition flex items-center justify-center flex-shrink-0 shadow">
+            <svg id="mic-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"></path>
+            </svg>
+          </button>
+
+          <!-- Text Input Form -->
+          <form id="chat-form" class="flex-grow flex items-center space-x-2">
+            <input
+              type="text"
+              id="user-input"
+              placeholder="Talk or type what you're working on..."
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+              autocomplete="off"
+            />
+            <button
+              type="submit"
+              id="send-btn"
+              class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-medium transition flex-shrink-0"
+            >
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Audio Player (Hidden) -->
+  <audio id="coach-audio" class="hidden"></audio>
+
+  <script>
+    let sessionId = localStorage.getItem("arjun_session_id") || "sess_" + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem("arjun_session_id", sessionId);
+
+    // Timer variables
+    let timerDuration = 25 * 60;
+    let timerRemaining = 25 * 60;
+    let timerInterval = null;
+    let timerRunning = false;
+
+    // Elements
+    const timerDisplay = document.getElementById("timer-display");
+    const timerStartBtn = document.getElementById("timer-start-btn");
+    const timerPauseBtn = document.getElementById("timer-pause-btn");
+    const timerResetBtn = document.getElementById("timer-reset-btn");
+    const currentTaskDisplay = document.getElementById("current-task-display");
+    const sessionPhaseBadge = document.getElementById("session-phase-badge");
+    const blocksCompletedBadge = document.getElementById("blocks-completed-badge");
+    const chatMessages = document.getElementById("chat-messages");
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const micBtn = document.getElementById("mic-btn");
+    const micIcon = document.getElementById("mic-icon");
+    const statusIndicator = document.getElementById("status-indicator");
+    const statusText = document.getElementById("status-text");
+    const coachAudio = document.getElementById("coach-audio");
+
+    // Audio recording state
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      timerDisplay.textContent = formatTime(timerRemaining);
+    }
+
+    function setTimerMinutes(minutes) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerDuration = minutes * 60;
+      timerRemaining = timerDuration;
+      updateTimerDisplay();
+      timerStartBtn.textContent = "Start Timer";
+    }
+
+    function startTimer() {
+      if (timerRunning) return;
+      timerRunning = true;
+      timerStartBtn.textContent = "Running";
+      timerInterval = setInterval(() => {
+        if (timerRemaining > 0) {
+          timerRemaining--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          timerStartBtn.textContent = "Start Timer";
+          onTimerComplete();
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerStartBtn.textContent = "Resume";
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerRemaining = timerDuration;
+      updateTimerDisplay();
+      timerStartBtn.textContent = "Start Timer";
+    }
+
+    timerStartBtn.addEventListener("click", startTimer);
+    timerPauseBtn.addEventListener("click", pauseTimer);
+    timerResetBtn.addEventListener("click", resetTimer);
+
+    async function onTimerComplete() {
+      // Trigger check-in from Arjun
+      appendMessage("assistant", "⏰ Focus block completed! Checking in with Arjun...");
+      try {
+        const res = await fetch("/api/session/check-in", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, event: "block_finished" })
+        });
+        const data = await res.json();
+        handleCoachResponse(data);
+      } catch (err) {
+        console.error("Check-in error:", err);
+      }
+    }
+
+    function appendMessage(role, text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "flex items-start space-x-3";
+
+      if (role === "assistant") {
+        msgDiv.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">A</div>
+          <div class="bg-slate-700/60 border border-slate-600/50 rounded-2xl rounded-tl-none p-3.5 text-sm text-slate-200 max-w-[85%] leading-relaxed">${text}</div>
+        `;
+      } else {
+        msgDiv.className += " justify-end";
+        msgDiv.innerHTML = `
+          <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-3.5 text-sm max-w-[85%] leading-relaxed">${text}</div>
+          <div class="w-8 h-8 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">You</div>
+        `;
+      }
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function handleCoachResponse(data) {
+      if (data.reply) {
+        appendMessage("assistant", data.reply);
+      }
+      if (data.phase) {
+        sessionPhaseBadge.textContent = `Phase: ${data.phase}`;
+      }
+      if (data.completed_blocks !== undefined) {
+        blocksCompletedBadge.textContent = `Completed: ${data.completed_blocks}`;
+      }
+      if (data.current_task) {
+        currentTaskDisplay.textContent = data.current_task;
+      }
+      if (data.block_duration_minutes && !timerRunning) {
+        setTimerMinutes(data.block_duration_minutes);
+      }
+      if (data.audio_base64) {
+        playBase64Audio(data.audio_base64);
+      }
+    }
+
+    function playBase64Audio(base64Str) {
+      try {
+        coachAudio.src = "data:audio/wav;base64," + base64Str;
+        coachAudio.play().catch(e => console.log("Audio autoplay prevented:", e));
+      } catch (e) {
+        console.error("Audio playback error:", e);
+      }
+    }
+
+    // Text Chat submit
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      appendMessage("user", message);
+      userInput.value = "";
+      setStatus(true, "Arjun is thinking...");
+
+      try {
+        const res = await fetch("/api/chat/text", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, message: message })
+        });
+        const data = await res.json();
+        handleCoachResponse(data);
+      } catch (err) {
+        appendMessage("assistant", "Sorry, having trouble connecting right now. Please check your backend.");
+      } finally {
+        setStatus(false);
+      }
+    });
+
+    // Voice Recording Logic
+    micBtn.addEventListener("click", async () => {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    });
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+          stream.getTracks().forEach(track => track.stop());
+          await sendVoiceChat(audioBlob);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        micBtn.classList.add("bg-red-600", "pulse-animation");
+        micBtn.classList.remove("bg-indigo-600");
+        setStatus(true, "Listening to you...");
+      } catch (err) {
+        alert("Microphone permission denied or unsupported.");
+        console.error(err);
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        micBtn.classList.remove("bg-red-600", "pulse-animation");
+        micBtn.classList.add("bg-indigo-600");
+        setStatus(true, "Transcribing & processing speech with Sarvam AI...");
+      }
+    }
+
+    async function sendVoiceChat(audioBlob) {
+      const formData = new FormData();
+      formData.append("file", audioBlob, "speech.wav");
+      formData.append("session_id", sessionId);
+
+      try {
+        const res = await fetch("/api/chat/voice", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        if (data.user_text) {
+          appendMessage("user", data.user_text);
+        }
+        handleCoachResponse(data);
+      } catch (err) {
+        appendMessage("assistant", "Could not process speech. Please verify your Sarvam API key.");
+      } finally {
+        setStatus(false);
+      }
+    }
+
+    function setStatus(visible, text = "") {
+      if (visible) {
+        statusIndicator.classList.remove("hidden");
+        statusText.textContent = text;
+      } else {
+        statusIndicator.classList.add("hidden");
+      }
+    }
+  </script>
+</body>
+</html>
